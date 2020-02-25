@@ -1,31 +1,18 @@
 <template>
-  <div v-if="pages.length > 0" style="background: black; width: 100%; height: 100%">
+  <v-container class="ma-0 pa-0" fluid v-if="pages.length > 0" style="background: black; width: 100%; height: 100%"
+       v-touch="{
+       left: () => next(),
+      right: () => prev(),
+      up: () => swipe('Up'),
+      down: () => swipe('Down')
+      }"
 
+  >
     <div>
-    <v-hover
-      v-slot:default="{ hover }"
-      style="z-index: 2;"
-
-    >
-
-      <div class="toolbar-area"
-      style="z-index: 2;"
-      >
-        <v-btn
-          fab
-          @click="toolbar = true"
-          :style="`z-index: 2; ${hover ? '' : 'display: none;'}`"
-        >
-          <v-icon>mdi-chevron-double-down</v-icon>
-        </v-btn>
-      </div>
-    </v-hover>
 
     <v-toolbar
-      :collapse="!toolbar"
       dense elevation="1"
-      style="z-index: 2; position: absolute;"
-      :class="`toolbar-area ${toolbar ? '' : 'd-none'}`"
+      :class="`toolbar-top settings ${toolbar ? '' : 'd-none'}`"
     >
       <v-btn
         icon
@@ -55,16 +42,79 @@
         <v-list>
           <v-list-item
           >
-            <v-switch v-model="doublePages" :label="` ${doublePages ? 'Double Pages' : 'Single Page'}`"></v-switch>
+            <!--  Menu: double pages buttons  -->
+            <v-row justify="center">
+              <v-col cols="auto">
+                <v-btn-toggle v-model="doublePagesButtons" dense mandatory active-class="primary" class="flex-column">
+                  <v-btn @click="setDoublePages(false)">
+                    Single page
+                  </v-btn>
+
+                  <v-btn @click="setDoublePages(true)">
+                    Double pages
+                  </v-btn>
+                </v-btn-toggle>
+              </v-col>
+            </v-row>
+          </v-list-item>
+          <v-list-item>
+          <v-row justify="center">
+            <v-col cols="auto" class="align-center">
+              <v-btn-toggle v-model="fitButtons" dense mandatory active-class="primary" class="flex-column">
+                <v-btn @click="setFit(ImageFit.WIDTH)">
+                  Fit to width
+                </v-btn>
+
+                <v-btn @click="setFit(ImageFit.HEIGHT)">
+                  Fit to height
+                </v-btn>
+
+                <v-btn @click="setFit(ImageFit.ORIGINAL)">
+                  Original
+                </v-btn>
+              </v-btn-toggle>
+            </v-col>
+          </v-row>
+          </v-list-item>
+          <v-list-item>
+            <!--  Menu: RTL buttons  -->
+            <v-row justify="center">
+              <v-col cols="auto">
+                <v-btn-toggle v-model="rtlButtons" dense mandatory active-class="primary" class="flex-column">
+                  <v-btn @click="setRtl(false)">
+                    Left to right
+                  </v-btn>
+
+                  <v-btn @click="setRtl(true)">
+                    Right to left
+                  </v-btn>
+                </v-btn-toggle>
+              </v-col>
+            </v-row>
           </v-list-item>
         </v-list>
 
       </v-menu>
 
     </v-toolbar>
+    <v-toolbar
+      dense elevation="1"
+      :class="`toolbar-bottom settings ${toolbar ? '' : 'd-none'}`"
+    >
+      <!--  Menu: progress bar  -->
+      <v-row>
+        <v-col cols="12">
+          <v-progress-linear :value="progress"
+                             height="20"
+                             background-color="white"
+                             color="secondary"
+                             rounded
+          />
+        </v-col>
+      </v-row>
+    </v-toolbar>
     </div>
 
-    <div>
     <!--  clickable zone: left  -->
     <div @click="rtl ? next() : prev()"
          class="left-quarter full-height"
@@ -72,7 +122,7 @@
     />
 
     <!--  clickable zone: menu  -->
-    <div @click="showMenu = true"
+    <div @click="toolbar = !toolbar"
          class="center-half full-height"
          style="z-index: 1;"
     />
@@ -83,6 +133,10 @@
          style="z-index: 1;"
     />
 
+    <div >
+
+    </div>
+    <div style="height: 100%; background-color: black; " class="d-flex flex-row align-center">
     <!--  Carousel  -->
     <v-carousel v-model="carouselPage"
                 :show-arrows="false"
@@ -108,7 +162,10 @@
                :height="maxHeight"
                :width="maxWidth(p+1)"
           />
+
         </div>
+        <p class="text-center" style="color:black"> {{ currentPage }}/{{ pagesCount}} </p>
+
       </v-carousel-item>
     </v-carousel>
 
@@ -163,19 +220,6 @@
     <!--              Page {{ currentPage }} of {{ pagesCount }}-->
     <!--            </v-col>-->
     <!--          </v-row>-->
-
-    <!--          &lt;!&ndash;  Menu: progress bar  &ndash;&gt;-->
-    <!--          <v-row>-->
-    <!--            <v-col cols="12">-->
-    <!--              <v-progress-linear :value="progress"-->
-    <!--                                 height="20"-->
-    <!--                                 background-color="white"-->
-    <!--                                 color="secondary"-->
-    <!--                                 rounded-->
-    <!--              />-->
-    <!--            </v-col>-->
-    <!--          </v-row>-->
-
     <!--          &lt;!&ndash;  Menu: go to page  &ndash;&gt;-->
     <!--          <v-row align="baseline" justify="center">-->
     <!--            <v-col cols="auto">-->
@@ -232,36 +276,6 @@
 
     <!--                <v-btn @click="setFit(ImageFit.ORIGINAL)">-->
     <!--                  Original-->
-    <!--                </v-btn>-->
-    <!--              </v-btn-toggle>-->
-    <!--            </v-col>-->
-    <!--          </v-row>-->
-
-    <!--          &lt;!&ndash;  Menu: RTL buttons  &ndash;&gt;-->
-    <!--          <v-row justify="center">-->
-    <!--            <v-col cols="auto">-->
-    <!--              <v-btn-toggle v-model="rtlButtons" dense mandatory active-class="primary" class="flex-column flex-md-row">-->
-    <!--                <v-btn @click="setRtl(false)">-->
-    <!--                  Left to right-->
-    <!--                </v-btn>-->
-
-    <!--                <v-btn @click="setRtl(true)">-->
-    <!--                  Right to left-->
-    <!--                </v-btn>-->
-    <!--              </v-btn-toggle>-->
-    <!--            </v-col>-->
-    <!--          </v-row>-->
-
-    <!--          &lt;!&ndash;  Menu: double pages buttons  &ndash;&gt;-->
-    <!--          <v-row justify="center">-->
-    <!--            <v-col cols="auto">-->
-    <!--              <v-btn-toggle v-model="doublePagesButtons" dense mandatory active-class="primary" class="flex-column flex-md-row">-->
-    <!--                <v-btn @click="setDoublePages(false)">-->
-    <!--                  Single page-->
-    <!--                </v-btn>-->
-
-    <!--                <v-btn @click="setDoublePages(true)">-->
-    <!--                  Double pages-->
     <!--                </v-btn>-->
     <!--              </v-btn-toggle>-->
     <!--            </v-col>-->
@@ -369,7 +383,7 @@
     </v-snackbar>
 
   </div>
-  </div>
+  </v-container>
 </template>
 
 <script lang="ts">
@@ -506,6 +520,9 @@ export default Vue.extend({
     }
   },
   methods: {
+    swipe (direction: string) {
+      alert(direction)
+    },
     keyPressed (e: KeyboardEvent) {
       switch (e.key) {
         case 'PageUp':
@@ -676,10 +693,21 @@ export default Vue.extend({
   position: fixed;
 }
 
-.toolbar-area {
+.toolbar-top {
   top: 0;
   height: 2em;
   width: 100%;
+}
+
+.toolbar-bottom {
+  bottom: 2em;
+  height: 2em;
+  width: 100%;
+}
+
+.settings {
+  position: absolute;
+  z-index: 2;
 }
 
 .full-height {
@@ -690,16 +718,19 @@ export default Vue.extend({
 .left-quarter {
   left: 0;
   width: 20%;
+  position: absolute;
 }
 
 .right-quarter {
   right: 0;
   width: 20%;
+  position: absolute;
 }
 
 .center-half {
   left: 20%;
   width: 60%;
+  position: absolute;
 }
 
 .dashed-x {

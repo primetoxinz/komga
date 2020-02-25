@@ -1,14 +1,22 @@
 import '@mdi/font/css/materialdesignicons.css'
 import 'typeface-roboto/index.css'
 import Vue from 'vue'
+// eslint-disable-next-line import/no-duplicates
 import Vuetify from 'vuetify/lib'
 
-Vue.use(Vuetify)
+import { Touch } from 'vuetify/lib/directives'
+
+Vue.use(Vuetify, {
+  directives: {
+    Touch
+  }
+})
 
 export default new Vuetify({
   icons: {
     iconfont: 'mdi'
   },
+
   theme: {
     themes: {
       light: {
