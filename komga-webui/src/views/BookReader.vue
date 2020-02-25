@@ -1,21 +1,86 @@
 <template>
   <div v-if="pages.length > 0" style="background: black; width: 100%; height: 100%">
+
+    <div>
+    <v-hover
+      v-slot:default="{ hover }"
+      style="z-index: 2;"
+
+    >
+
+      <div class="toolbar-area"
+      style="z-index: 2;"
+      >
+        <v-btn
+          fab
+          @click="toolbar = true"
+          :style="`z-index: 2; ${hover ? '' : 'display: none;'}`"
+        >
+          <v-icon>mdi-chevron-double-down</v-icon>
+        </v-btn>
+      </div>
+    </v-hover>
+
+    <v-toolbar
+      :collapse="!toolbar"
+      dense elevation="1"
+      style="z-index: 2; position: absolute;"
+      :class="`toolbar-area ${toolbar ? '' : 'd-none'}`"
+    >
+      <v-btn
+        icon
+        @click="toolbar = !toolbar"
+      >
+        <v-icon>mdi-chevron-double-up</v-icon>
+      </v-btn>
+      <v-toolbar-title> {{ book.name }}</v-toolbar-title>
+
+      <v-spacer></v-spacer>
+
+      <v-menu
+        v-model="menu"
+        top
+        left
+        :close-on-content-click="false"
+      >
+        <template v-slot:activator="{ on }">
+          <v-btn
+            icon
+            v-on="on"
+          >
+            <v-icon>mdi-dots-vertical</v-icon>
+          </v-btn>
+        </template>
+
+        <v-list>
+          <v-list-item
+          >
+            <v-switch v-model="doublePages" :label="` ${doublePages ? 'Double Pages' : 'Single Page'}`"></v-switch>
+          </v-list-item>
+        </v-list>
+
+      </v-menu>
+
+    </v-toolbar>
+    </div>
+
+    <div>
     <!--  clickable zone: left  -->
     <div @click="rtl ? next() : prev()"
          class="left-quarter full-height"
-         style="z-index: 1; position: absolute"
+         style="z-index: 1;"
     />
 
     <!--  clickable zone: menu  -->
     <div @click="showMenu = true"
          class="center-half full-height"
-         style="z-index: 1; position: absolute"
+         style="z-index: 1;"
     />
 
     <!--  clickable zone: right  -->
     <div @click="rtl ? prev() : next()"
          class="right-quarter full-height"
-         style="z-index: 1; position: absolute"
+         style="z-index: 1;"
     />
 
     <!--  Carousel  -->
@@ -48,198 +113,198 @@
     </v-carousel>
 
     <!--  Menu  -->
-    <v-overlay :value="showMenu"
-               opacity=".8"
-    >
-      <!--   Menu: left zone with arrow   -->
-      <div class="fixed-position full-height left-quarter"
-           style="display: flex; align-items: center; justify-content: center"
-      >
-        <v-icon size="8em">
-          mdi-chevron-left
-        </v-icon>
-      </div>
+    <!--    <v-overlay :value="showMenu"-->
+    <!--               opacity=".8"-->
+    <!--    >-->
+    <!--      &lt;!&ndash;   Menu: left zone with arrow   &ndash;&gt;-->
+    <!--      <div class="fixed-position full-height left-quarter"-->
+    <!--           style="display: flex; align-items: center; justify-content: center"-->
+    <!--      >-->
+    <!--        <v-icon size="8em">-->
+    <!--          mdi-chevron-left-->
+    <!--        </v-icon>-->
+    <!--      </div>-->
 
-      <!--   Menu: central zone   -->
-      <div class="dashed-x fixed-position center-half full-height"
-           @click.self="showMenu = false"
-      >
-        <div style="position: absolute; top: 1em; left: 1em">
-          <v-btn @click="closeBook"
-                 color="primary"
-          >
-            Close book
-          </v-btn>
+    <!--      &lt;!&ndash;   Menu: central zone   &ndash;&gt;-->
+    <!--      <div class="dashed-x fixed-position center-half full-height"-->
+    <!--           @click.self="showMenu = false"-->
+    <!--      >-->
+    <!--        <div style="position: absolute; top: 1em; left: 1em">-->
+    <!--          <v-btn @click="closeBook"-->
+    <!--                 color="primary"-->
+    <!--          >-->
+    <!--            Close book-->
+    <!--          </v-btn>-->
 
-          <v-btn @click="showMenu = false; showThumbnailsExplorer = true"
-                 color="primary"
-                 class="ml-2"
-          >
-            <v-icon>mdi-view-grid</v-icon>
-          </v-btn>
-        </div>
+    <!--          <v-btn @click="showMenu = false; showThumbnailsExplorer = true"-->
+    <!--                 color="primary"-->
+    <!--                 class="ml-2"-->
+    <!--          >-->
+    <!--            <v-icon>mdi-view-grid</v-icon>-->
+    <!--          </v-btn>-->
+    <!--        </div>-->
 
-        <v-btn icon
-               @click="showMenu = false"
-               absolute
-               top
-               right
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
+    <!--        <v-btn icon-->
+    <!--               @click="showMenu = false"-->
+    <!--               absolute-->
+    <!--               top-->
+    <!--               right-->
+    <!--        >-->
+    <!--          <v-icon>mdi-close</v-icon>-->
+    <!--        </v-btn>-->
 
-        <v-container fluid
-                     class="pa-6 pt-12"
-                     style="border-bottom: 4px dashed"
-        >
-          <!--  Menu: number of pages  -->
-          <v-row>
-            <v-col class="text-center title">
-              Page {{ currentPage }} of {{ pagesCount }}
-            </v-col>
-          </v-row>
+    <!--        <v-container fluid-->
+    <!--                     class="pa-6 pt-12"-->
+    <!--                     style="border-bottom: 4px dashed"-->
+    <!--        >-->
+    <!--          &lt;!&ndash;  Menu: number of pages  &ndash;&gt;-->
+    <!--          <v-row>-->
+    <!--            <v-col class="text-center title">-->
+    <!--              Page {{ currentPage }} of {{ pagesCount }}-->
+    <!--            </v-col>-->
+    <!--          </v-row>-->
 
-          <!--  Menu: progress bar  -->
-          <v-row>
-            <v-col cols="12">
-              <v-progress-linear :value="progress"
-                                 height="20"
-                                 background-color="white"
-                                 color="secondary"
-                                 rounded
-              />
-            </v-col>
-          </v-row>
+    <!--          &lt;!&ndash;  Menu: progress bar  &ndash;&gt;-->
+    <!--          <v-row>-->
+    <!--            <v-col cols="12">-->
+    <!--              <v-progress-linear :value="progress"-->
+    <!--                                 height="20"-->
+    <!--                                 background-color="white"-->
+    <!--                                 color="secondary"-->
+    <!--                                 rounded-->
+    <!--              />-->
+    <!--            </v-col>-->
+    <!--          </v-row>-->
 
-          <!--  Menu: go to page  -->
-          <v-row align="baseline" justify="center">
-            <v-col cols="auto">
-              Go to page
-            </v-col>
-            <v-col cols="auto">
-              <v-text-field
-                v-model="goToPage"
-                hide-details
-                single-line
-                type="number"
-                @change="goTo"
-                style="width: 4em"
-              />
-            </v-col>
-          </v-row>
+    <!--          &lt;!&ndash;  Menu: go to page  &ndash;&gt;-->
+    <!--          <v-row align="baseline" justify="center">-->
+    <!--            <v-col cols="auto">-->
+    <!--              Go to page-->
+    <!--            </v-col>-->
+    <!--            <v-col cols="auto">-->
+    <!--              <v-text-field-->
+    <!--                v-model="goToPage"-->
+    <!--                hide-details-->
+    <!--                single-line-->
+    <!--                type="number"-->
+    <!--                @change="goTo"-->
+    <!--                style="width: 4em"-->
+    <!--              />-->
+    <!--            </v-col>-->
+    <!--          </v-row>-->
 
-          <!--  Menu: page slider  -->
-          <v-row align="baseline">
-            <v-col cols="12">
-              <v-slider
-                v-model="goToPage"
-                class="align-center"
-                :max="pagesCount"
-                min="1"
-                hide-details
-                @change="goTo"
-              >
-                <template v-slot:prepend>
-                  <v-btn icon @click="goToFirst">
-                    <v-icon>mdi-arrow-collapse-left</v-icon>
-                  </v-btn>
-                </template>
-                <template v-slot:append>
-                  <v-btn icon @click="goToLast">
-                    <v-icon>mdi-arrow-collapse-right</v-icon>
-                  </v-btn>
-                </template>
-              </v-slider>
-            </v-col>
-          </v-row>
+    <!--          &lt;!&ndash;  Menu: page slider  &ndash;&gt;-->
+    <!--          <v-row align="baseline">-->
+    <!--            <v-col cols="12">-->
+    <!--              <v-slider-->
+    <!--                v-model="goToPage"-->
+    <!--                class="align-center"-->
+    <!--                :max="pagesCount"-->
+    <!--                min="1"-->
+    <!--                hide-details-->
+    <!--                @change="goTo"-->
+    <!--              >-->
+    <!--                <template v-slot:prepend>-->
+    <!--                  <v-btn icon @click="goToFirst">-->
+    <!--                    <v-icon>mdi-arrow-collapse-left</v-icon>-->
+    <!--                  </v-btn>-->
+    <!--                </template>-->
+    <!--                <template v-slot:append>-->
+    <!--                  <v-btn icon @click="goToLast">-->
+    <!--                    <v-icon>mdi-arrow-collapse-right</v-icon>-->
+    <!--                  </v-btn>-->
+    <!--                </template>-->
+    <!--              </v-slider>-->
+    <!--            </v-col>-->
+    <!--          </v-row>-->
 
-          <!--  Menu: fit buttons  -->
-          <v-row justify="center">
-            <v-col cols="auto">
-              <v-btn-toggle v-model="fitButtons" dense mandatory active-class="primary" class="flex-column flex-md-row">
-                <v-btn @click="setFit(ImageFit.WIDTH)">
-                  Fit to width
-                </v-btn>
+    <!--          &lt;!&ndash;  Menu: fit buttons  &ndash;&gt;-->
+    <!--          <v-row justify="center">-->
+    <!--            <v-col cols="auto">-->
+    <!--              <v-btn-toggle v-model="fitButtons" dense mandatory active-class="primary" class="flex-column flex-md-row">-->
+    <!--                <v-btn @click="setFit(ImageFit.WIDTH)">-->
+    <!--                  Fit to width-->
+    <!--                </v-btn>-->
 
-                <v-btn @click="setFit(ImageFit.HEIGHT)">
-                  Fit to height
-                </v-btn>
+    <!--                <v-btn @click="setFit(ImageFit.HEIGHT)">-->
+    <!--                  Fit to height-->
+    <!--                </v-btn>-->
 
-                <v-btn @click="setFit(ImageFit.ORIGINAL)">
-                  Original
-                </v-btn>
-              </v-btn-toggle>
-            </v-col>
-          </v-row>
+    <!--                <v-btn @click="setFit(ImageFit.ORIGINAL)">-->
+    <!--                  Original-->
+    <!--                </v-btn>-->
+    <!--              </v-btn-toggle>-->
+    <!--            </v-col>-->
+    <!--          </v-row>-->
 
-          <!--  Menu: RTL buttons  -->
-          <v-row justify="center">
-            <v-col cols="auto">
-              <v-btn-toggle v-model="rtlButtons" dense mandatory active-class="primary" class="flex-column flex-md-row">
-                <v-btn @click="setRtl(false)">
-                  Left to right
-                </v-btn>
+    <!--          &lt;!&ndash;  Menu: RTL buttons  &ndash;&gt;-->
+    <!--          <v-row justify="center">-->
+    <!--            <v-col cols="auto">-->
+    <!--              <v-btn-toggle v-model="rtlButtons" dense mandatory active-class="primary" class="flex-column flex-md-row">-->
+    <!--                <v-btn @click="setRtl(false)">-->
+    <!--                  Left to right-->
+    <!--                </v-btn>-->
 
-                <v-btn @click="setRtl(true)">
-                  Right to left
-                </v-btn>
-              </v-btn-toggle>
-            </v-col>
-          </v-row>
+    <!--                <v-btn @click="setRtl(true)">-->
+    <!--                  Right to left-->
+    <!--                </v-btn>-->
+    <!--              </v-btn-toggle>-->
+    <!--            </v-col>-->
+    <!--          </v-row>-->
 
-          <!--  Menu: double pages buttons  -->
-          <v-row justify="center">
-            <v-col cols="auto">
-              <v-btn-toggle v-model="doublePagesButtons" dense mandatory active-class="primary" class="flex-column flex-md-row">
-                <v-btn @click="setDoublePages(false)">
-                  Single page
-                </v-btn>
+    <!--          &lt;!&ndash;  Menu: double pages buttons  &ndash;&gt;-->
+    <!--          <v-row justify="center">-->
+    <!--            <v-col cols="auto">-->
+    <!--              <v-btn-toggle v-model="doublePagesButtons" dense mandatory active-class="primary" class="flex-column flex-md-row">-->
+    <!--                <v-btn @click="setDoublePages(false)">-->
+    <!--                  Single page-->
+    <!--                </v-btn>-->
 
-                <v-btn @click="setDoublePages(true)">
-                  Double pages
-                </v-btn>
-              </v-btn-toggle>
-            </v-col>
-          </v-row>
+    <!--                <v-btn @click="setDoublePages(true)">-->
+    <!--                  Double pages-->
+    <!--                </v-btn>-->
+    <!--              </v-btn-toggle>-->
+    <!--            </v-col>-->
+    <!--          </v-row>-->
 
-          <!--  Menu: keyboard shortcuts  -->
-          <v-row>
-            <v-col cols="auto">
-              <div><kbd>←</kbd> / <kbd>⇞</kbd></div>
-              <div><kbd>→</kbd> / <kbd>⇟</kbd></div>
-              <div><kbd>home</kbd></div>
-              <div><kbd>end</kbd></div>
-              <div><kbd>space</kbd></div>
-              <div><kbd>m</kbd></div>
-              <div><kbd>t</kbd></div>
-              <div><kbd>esc</kbd></div>
-            </v-col>
-            <v-col>
-              <div v-if="!rtl">Previous page</div>
-              <div v-else>Next page</div>
-              <div v-if="!rtl">Next page</div>
-              <div v-else>Previous page</div>
-              <div>First page</div>
-              <div>Last page</div>
-              <div>Scroll down</div>
-              <div>Show / hide menu</div>
-              <div>Show / hide thumbnails</div>
-              <div>Close book</div>
-            </v-col>
-          </v-row>
-        </v-container>
-      </div>
+    <!--          &lt;!&ndash;  Menu: keyboard shortcuts  &ndash;&gt;-->
+    <!--          <v-row>-->
+    <!--            <v-col cols="auto">-->
+    <!--              <div><kbd>←</kbd> / <kbd>⇞</kbd></div>-->
+    <!--              <div><kbd>→</kbd> / <kbd>⇟</kbd></div>-->
+    <!--              <div><kbd>home</kbd></div>-->
+    <!--              <div><kbd>end</kbd></div>-->
+    <!--              <div><kbd>space</kbd></div>-->
+    <!--              <div><kbd>m</kbd></div>-->
+    <!--              <div><kbd>t</kbd></div>-->
+    <!--              <div><kbd>esc</kbd></div>-->
+    <!--            </v-col>-->
+    <!--            <v-col>-->
+    <!--              <div v-if="!rtl">Previous page</div>-->
+    <!--              <div v-else>Next page</div>-->
+    <!--              <div v-if="!rtl">Next page</div>-->
+    <!--              <div v-else>Previous page</div>-->
+    <!--              <div>First page</div>-->
+    <!--              <div>Last page</div>-->
+    <!--              <div>Scroll down</div>-->
+    <!--              <div>Show / hide menu</div>-->
+    <!--              <div>Show / hide thumbnails</div>-->
+    <!--              <div>Close book</div>-->
+    <!--            </v-col>-->
+    <!--          </v-row>-->
+    <!--        </v-container>-->
+    <!--      </div>-->
 
-      <!--   Menu: right zone with arrow   -->
-      <div class="fixed-position full-height right-quarter"
-           style="display: flex; align-items: center; justify-content: center"
-      >
-        <v-icon size="8em">
-          mdi-chevron-right
-        </v-icon>
-      </div>
+    <!--      &lt;!&ndash;   Menu: right zone with arrow   &ndash;&gt;-->
+    <!--      <div class="fixed-position full-height right-quarter"-->
+    <!--           style="display: flex; align-items: center; justify-content: center"-->
+    <!--      >-->
+    <!--        <v-icon size="8em">-->
+    <!--          mdi-chevron-right-->
+    <!--        </v-icon>-->
+    <!--      </div>-->
 
-    </v-overlay>
+    <!--    </v-overlay>-->
 
     <v-dialog v-model="showThumbnailsExplorer" scrollable>
       <v-card :max-height="$vuetify.breakpoint.height * .9"
@@ -304,6 +369,7 @@
     </v-snackbar>
 
   </div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -339,7 +405,9 @@ export default Vue.extend({
       rtl: false,
       doublePages: false,
       doublePagesButtons: 0,
-      showThumbnailsExplorer: false
+      showThumbnailsExplorer: false,
+      toolbar: true,
+      menu: false
     }
   },
   created () {
@@ -595,6 +663,12 @@ export default Vue.extend({
 <style scoped>
 .fixed-position {
   position: fixed;
+}
+
+.toolbar-area {
+  top: 0;
+  height: 2em;
+  width: 100%;
 }
 
 .full-height {
