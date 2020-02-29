@@ -1,3 +1,19 @@
+## [0.15.1](https://github.com/gotson/komga/compare/v0.15.0...v0.15.1) (2020-02-25)
+
+
+### Bug Fixes
+
+* **webui:** responsive scaling for login page logo ([20720ae](https://github.com/gotson/komga/commit/20720ae7ccf44c4699d0154a0aa6ed3216813914))
+* send proper JSON on API 404 instead of index.html ([fb147a4](https://github.com/gotson/komga/commit/fb147a447a4ba8aff73da57fff1c511a9d515b20))
+
+# [0.15.0](https://github.com/gotson/komga/compare/v0.14.2...v0.15.0) (2020-02-25)
+
+
+### Features
+
+* **webui:** add series and book title in page title and reader overlay ([6b1998c](https://github.com/gotson/komga/commit/6b1998c1d9fa75db4a3971fb772ad18aaad3bdaf))
+* **webui:** add the series and book title to page title ([23c10c2](https://github.com/gotson/komga/commit/23c10c231efaa5f409811e453c51287a9aca4a9b))
+
 ## [0.14.2](https://github.com/gotson/komga/compare/v0.14.1...v0.14.2) (2020-02-20)
 
 
