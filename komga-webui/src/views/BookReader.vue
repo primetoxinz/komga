@@ -23,69 +23,61 @@
 
       <v-spacer></v-spacer>
 
-      <v-menu
+      <v-dialog
         v-model="menu"
-        top
-        left
         :close-on-content-click="false"
+        fullscreen
+        hide-overlay
+        bottom
+        transition="dialog-bottom-transition"
       >
         <template v-slot:activator="{ on }">
           <v-btn
             icon
             v-on="on"
           >
-            <v-icon>mdi-dots-vertical</v-icon>
+            <v-icon>mdi-settings</v-icon>
           </v-btn>
         </template>
 
-        <v-list>
-          <v-list-item
-          >
-            <!--  Menu: double pages buttons  -->
-            <v-row justify="center">
-              <v-col cols="auto">
-                <v-switch v-model="doublePages" :label="`${doublePages ? 'Double Pages' : 'Single Pages'}`"/>
-              </v-col>
-            </v-row>
-          </v-list-item>
-          <v-list-item>
-          <v-row justify="center">
-            <v-col cols="auto" class="align-center">
-              <v-btn-toggle v-model="fitButtons" dense mandatory active-class="primary" class="flex-column">
-                <v-btn @click="setFit(ImageFit.WIDTH)">
-                  Fit to width
-                </v-btn>
+        <v-toolbar dark color="primary">
+          <v-btn icon dark @click="menu = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+          <v-toolbar-title>Reader Settings</v-toolbar-title>
+        </v-toolbar>
 
-                <v-btn @click="setFit(ImageFit.HEIGHT)">
-                  Fit to height
-                </v-btn>
-
-                <v-btn @click="setFit(ImageFit.ORIGINAL)">
-                  Original
-                </v-btn>
-              </v-btn-toggle>
-            </v-col>
-          </v-row>
-          </v-list-item>
-          <v-list-item>
-            <!--  Menu: RTL buttons  -->
-            <v-row justify="center">
-              <v-col cols="auto">
-                <v-btn-toggle v-model="rtlButtons" dense mandatory active-class="primary" class="flex-column">
-                  <v-btn @click="setRtl(false)">
-                    Left to right
-                  </v-btn>
-
-                  <v-btn @click="setRtl(true)">
-                    Right to left
-                  </v-btn>
-                </v-btn-toggle>
-              </v-col>
-            </v-row>
-          </v-list-item>
-        </v-list>
-
-      </v-menu>
+        <v-layout class="full-height d-flex flex-column justify-center">
+          <v-flex>
+            <v-list class="full-height">
+              <v-list-item class="">
+                <settings-switch v-model="doublePages" :label="`${ doublePages ? 'Double Pages' : 'Single Page'}`"></settings-switch>
+              </v-list-item>
+              <v-list-item class="">
+                <settings-switch v-model="rtl" :label="`${rtl ? 'Right to left' : 'Left to right'}`"></settings-switch>
+              </v-list-item>
+              <v-list-item class="">
+                <settings-combo
+                  :items="pageLayout.imageFits"
+                  v-model="imageFit"
+                  label="Scaling"
+                >
+                  <template slot="item" slot-scope="data">
+                    <div class="text-capitalize">
+                      {{ imageFitDisplay(data.item) }}
+                    </div>
+                  </template>
+                  <template slot="selection" slot-scope="data">
+                    <div class="text-capitalize">
+                      {{ imageFitDisplay(data.item)  }}
+                    </div>
+                  </template>
+                </settings-combo>
+              </v-list-item>
+            </v-list>
+          </v-flex>
+        </v-layout>
+      </v-dialog>
 
     </v-toolbar>
     <v-bottom-navigation
@@ -239,135 +231,13 @@
         <p v-else>Click or press next again<br/>to exit the reader.</p>
       </div>
     </v-snackbar>
-
   </v-container>
-  <!--  Menu  -->
-  <!--    <v-overlay :value="showMenu"-->
-  <!--               opacity=".8"-->
-  <!--    >-->
-  <!--      &lt;!&ndash;   Menu: left zone with arrow   &ndash;&gt;-->
-  <!--      <div class="fixed-position full-height left-quarter"-->
-  <!--           style="display: flex; align-items: center; justify-content: center"-->
-  <!--      >-->
-  <!--        <v-icon size="8em">-->
-  <!--          mdi-chevron-left-->
-  <!--        </v-icon>-->
-  <!--      </div>-->
-
-  <!--      &lt;!&ndash;   Menu: central zone   &ndash;&gt;-->
-  <!--      <div class="dashed-x fixed-position center-half full-height"-->
-  <!--           @click.self="showMenu = false"-->
-  <!--      >-->
-  <!--        <div style="position: absolute; top: 1em; left: 1em">-->
-  <!--          <v-btn @click="closeBook"-->
-  <!--                 color="primary"-->
-  <!--          >-->
-  <!--            Close book-->
-  <!--          </v-btn>-->
-
-  <!--          <v-btn @click="showMenu = false; showThumbnailsExplorer = true"-->
-  <!--                 color="primary"-->
-  <!--                 class="ml-2"-->
-  <!--          >-->
-  <!--            <v-icon>mdi-view-grid</v-icon>-->
-  <!--          </v-btn>-->
-  <!--        </div>-->
-
-  <!--        <v-btn icon-->
-  <!--               @click="showMenu = false"-->
-  <!--               absolute-->
-  <!--               top-->
-  <!--               right-->
-  <!--        >-->
-  <!--          <v-icon>mdi-close</v-icon>-->
-  <!--        </v-btn>-->
-
-  <!--        <v-container fluid-->
-  <!--                     class="pa-6 pt-12"-->
-  <!--                     style="border-bottom: 4px dashed"-->
-  <!--        >-->
-  <!--          &lt;!&ndash;  Menu: number of pages  &ndash;&gt;-->
-  <!--          <v-row>-->
-  <!--            <v-col class="text-center title">-->
-  <!--              Page {{ currentPage }} of {{ pagesCount }}-->
-  <!--            </v-col>-->
-  <!--          </v-row>-->
-  <!--          &lt;!&ndash;  Menu: go to page  &ndash;&gt;-->
-  <!--          <v-row align="baseline" justify="center">-->
-  <!--            <v-col cols="auto">-->
-  <!--              Go to page-->
-  <!--            </v-col>-->
-  <!--            <v-col cols="auto">-->
-  <!--              <v-text-field-->
-  <!--                v-model="goToPage"-->
-  <!--                hide-details-->
-  <!--                single-line-->
-  <!--                type="number"-->
-  <!--                @change="goTo"-->
-  <!--                style="width: 4em"-->
-  <!--              />-->
-  <!--            </v-col>-->
-  <!--          </v-row>-->
-  <!--          &lt;!&ndash;  Menu: fit buttons  &ndash;&gt;-->
-  <!--          <v-row justify="center">-->
-  <!--            <v-col cols="auto">-->
-  <!--              <v-btn-toggle v-model="fitButtons" dense mandatory active-class="primary" class="flex-column flex-md-row">-->
-  <!--                <v-btn @click="setFit(ImageFit.WIDTH)">-->
-  <!--                  Fit to width-->
-  <!--                </v-btn>-->
-
-  <!--                <v-btn @click="setFit(ImageFit.HEIGHT)">-->
-  <!--                  Fit to height-->
-  <!--                </v-btn>-->
-
-  <!--                <v-btn @click="setFit(ImageFit.ORIGINAL)">-->
-  <!--                  Original-->
-  <!--                </v-btn>-->
-  <!--              </v-btn-toggle>-->
-  <!--            </v-col>-->
-  <!--          </v-row>-->
-
-  <!--          &lt;!&ndash;  Menu: keyboard shortcuts  &ndash;&gt;-->
-  <!--          <v-row>-->
-  <!--            <v-col cols="auto">-->
-  <!--              <div><kbd>←</kbd> / <kbd>⇞</kbd></div>-->
-  <!--              <div><kbd>→</kbd> / <kbd>⇟</kbd></div>-->
-  <!--              <div><kbd>home</kbd></div>-->
-  <!--              <div><kbd>end</kbd></div>-->
-  <!--              <div><kbd>space</kbd></div>-->
-  <!--              <div><kbd>m</kbd></div>-->
-  <!--              <div><kbd>t</kbd></div>-->
-  <!--              <div><kbd>esc</kbd></div>-->
-  <!--            </v-col>-->
-  <!--            <v-col>-->
-  <!--              <div v-if="!rtl">Previous page</div>-->
-  <!--              <div v-else>Next page</div>-->
-  <!--              <div v-if="!rtl">Next page</div>-->
-  <!--              <div v-else>Previous page</div>-->
-  <!--              <div>First page</div>-->
-  <!--              <div>Last page</div>-->
-  <!--              <div>Scroll down</div>-->
-  <!--              <div>Show / hide menu</div>-->
-  <!--              <div>Show / hide thumbnails</div>-->
-  <!--              <div>Close book</div>-->
-  <!--            </v-col>-->
-  <!--          </v-row>-->
-  <!--        </v-container>-->
-  <!--      </div>-->
-
-  <!--      &lt;!&ndash;   Menu: right zone with arrow   &ndash;&gt;-->
-  <!--      <div class="fixed-position full-height right-quarter"-->
-  <!--           style="display: flex; align-items: center; justify-content: center"-->
-  <!--      >-->
-  <!--        <v-icon size="8em">-->
-  <!--          mdi-chevron-right-->
-  <!--        </v-icon>-->
-  <!--      </div>-->
-
-  <!--    </v-overlay>-->
 </template>
 
 <script lang="ts">
+import SettingsSwitch from '@/components/SettingsSwitch.vue'
+import SettingsCombo from '@/components/SettingsCombo.vue'
+
 import { checkWebpFeature } from '@/functions/check-webp'
 import { bookPageThumbnailUrl, bookPageUrl } from '@/functions/urls'
 import { ImageFit } from '@/types/common'
@@ -380,6 +250,7 @@ const cookieDoublePages = 'webreader.doublePages'
 
 export default Vue.extend({
   name: 'BookReader',
+  components: { SettingsSwitch, SettingsCombo },
   data: () => {
     return {
       ImageFit,
@@ -395,16 +266,14 @@ export default Vue.extend({
       convertTo: 'jpeg',
       carouselPage: 0,
       goToPage: 1,
-      showMenu: false,
-      fitButtons: 1,
-      fit: ImageFit.HEIGHT,
-      rtlButtons: 0,
-      rtl: false,
       showThumbnailsExplorer: false,
       toolbar: true,
       menu: false,
       pageLayout: {
-        doublePages: false
+        doublePages: false,
+        imageFits: Object.values(ImageFit),
+        fit: ImageFit.HEIGHT,
+        rtl: false
       }
     }
   },
@@ -419,20 +288,9 @@ export default Vue.extend({
     window.addEventListener('keydown', this.keyPressed)
     this.setup(this.bookId, Number(this.$route.query.page))
 
-    // restore options for RTL, fit, and double pages
-    if (this.$cookies.isKey(cookieRtl)) {
-      if (this.$cookies.get(cookieRtl) === 'true') {
-        this.setRtl(true)
-      }
-    }
-    if (this.$cookies.isKey(cookieFit)) {
-      this.setFit(this.$cookies.get(cookieFit))
-    }
-    if (this.$cookies.isKey(cookieDoublePages)) {
-      if (this.$cookies.get(cookieDoublePages) === 'true') {
-        this.doublePages = true
-      }
-    }
+    this.loadFromCookie(cookieRtl, (v) => { this.rtl = (v === 'true') })
+    this.loadFromCookie(cookieDoublePages, (v) => { this.doublePages = (v === 'true') })
+    this.loadFromCookie(cookieFit, (v) => { if (v) { this.imageFit = v } })
   },
   destroyed () {
     window.removeEventListener('keydown', this.keyPressed)
@@ -479,7 +337,7 @@ export default Vue.extend({
       return this.currentPage / this.pagesCount * 100
     },
     maxHeight (): number | null {
-      return this.fit === ImageFit.HEIGHT ? this.$vuetify.breakpoint.height : null
+      return this.imageFit === ImageFit.HEIGHT ? this.$vuetify.breakpoint.height : null
     },
     slidesRange (): number[] {
       if (!this.doublePages) {
@@ -499,6 +357,24 @@ export default Vue.extend({
     },
     bookTitle (): string {
       return getBookTitleCompact(this.book.name, this.series.name)
+    },
+    rtl: {
+      get: function (): boolean {
+        return this.pageLayout.rtl
+      },
+      set: function (rtl: boolean): void {
+        this.pageLayout.rtl = rtl
+        this.$cookies.set(cookieRtl, rtl, Infinity)
+      }
+    },
+    imageFit: {
+      get: function (): ImageFit {
+        return this.pageLayout.fit
+      },
+      set: function (fit: ImageFit): void {
+        this.pageLayout.fit = fit
+        this.$cookies.set(cookieFit, fit, Infinity)
+      }
     },
     doublePages: {
       get: function (): boolean {
@@ -520,11 +396,11 @@ export default Vue.extend({
       switch (e.key) {
         case 'PageUp':
         case 'ArrowRight':
-          this.rtl ? this.prev() : this.next()
+          this.pageLayout.rtl ? this.prev() : this.next()
           break
         case 'PageDown':
         case 'ArrowLeft':
-          this.rtl ? this.next() : this.prev()
+          this.pageLayout.rtl ? this.next() : this.prev()
           break
         case 'Home':
           this.goToFirst()
@@ -533,7 +409,7 @@ export default Vue.extend({
           this.goToLast()
           break
         case 'm':
-          this.showMenu = !this.showMenu
+          this.toolbar = !this.toolbar
           break
         case 't':
           this.showThumbnailsExplorer = !this.showThumbnailsExplorer
@@ -626,26 +502,6 @@ export default Vue.extend({
     closeBook () {
       this.$router.push({ name: 'browse-book', params: { bookId: this.bookId.toString() } })
     },
-    setRtl (rtl: boolean) {
-      this.rtl = rtl
-      this.rtlButtons = rtl ? 1 : 0
-      this.$cookies.set(cookieRtl, rtl, Infinity)
-    },
-    setFit (fit: ImageFit) {
-      this.fit = fit
-      switch (fit) {
-        case ImageFit.WIDTH:
-          this.fitButtons = 0
-          break
-        case ImageFit.HEIGHT:
-          this.fitButtons = 1
-          break
-        case ImageFit.ORIGINAL:
-          this.fitButtons = 2
-          break
-      }
-      this.$cookies.set(cookieFit, fit, Infinity)
-    },
     toSinglePages (i: number): number {
       if (i === 1) return 1
       if (i === this.slidesCount) return this.pagesCount
@@ -662,13 +518,27 @@ export default Vue.extend({
       return Math.abs(this.currentPage - p) <= 2
     },
     maxWidth (p: number): number | null {
-      if (this.fit !== ImageFit.WIDTH) {
+      if (this.imageFit !== ImageFit.WIDTH) {
         return null
       }
       if (this.doublePages && p !== 1 && p !== this.pagesCount) {
         return this.$vuetify.breakpoint.width / 2.2
       }
       return this.$vuetify.breakpoint.width
+    },
+    imageFitDisplay (fit: ImageFit): string {
+      let display = {
+        [ImageFit.HEIGHT]: 'fit to height',
+        [ImageFit.WIDTH]: 'fit to width',
+        [ImageFit.ORIGINAL]: 'original'
+      }
+      return display[fit]
+    },
+    loadFromCookie (cookieKey: string, setter: (value: any) => void): void {
+      if (this.$cookies.isKey(cookieKey)) {
+        let value = this.$cookies.get(cookieKey)
+        setter(value)
+      }
     }
   }
 })
