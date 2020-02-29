@@ -54,7 +54,7 @@
                 <settings-switch v-model="doublePages" :label="`${ doublePages ? 'Double Pages' : 'Single Page'}`"></settings-switch>
               </v-list-item>
               <v-list-item class="">
-                <settings-switch v-model="rtl" :label="`${rtl ? 'Right to left' : 'Left to right'}`"></settings-switch>
+                <settings-switch v-model="flipDirection" :label="`${!flipDirection ? 'Right to left' : 'Left to right'}`"></settings-switch>
               </v-list-item>
               <v-list-item class="">
                 <settings-combo
@@ -120,7 +120,7 @@
     </div>
 
     <!--  clickable zone: left  -->
-    <div @click="rtl ? next() : prev()"
+    <div @click="flipDirection ? next() : prev()"
          class="left-quarter full-height top"
          style="z-index: 1;"
     />
@@ -132,7 +132,7 @@
     />
 
     <!--  clickable zone: right  -->
-    <div @click="rtl ? prev() : next()"
+    <div @click="flipDirection ? prev() : next()"
          class="right-quarter full-height top"
          style="z-index: 1;"
     />
@@ -144,7 +144,7 @@
                 hide-delimiters
                 :continuous="false"
                 touchless
-                :reverse="rtl"
+                :reverse="flipDirection"
                 height="100%"
     >
       <!--  Carousel: pages  -->
@@ -154,7 +154,7 @@
                        class="full-height"
       >
         <div class="full-height d-flex flex-column justify-center reader-background">
-          <div :class="`d-flex flex-row${rtl ? '-reverse' : ''} justify-center px-0 mx-0` " >
+          <div :class="`d-flex flex-row${flipDirection ? '-reverse' : ''} justify-center px-0 mx-0` " >
             <img :src="getPageUrl(p)"
                  :height="maxHeight"
                  :width="maxWidth(p)"
@@ -245,7 +245,7 @@ import Vue from 'vue'
 import { getBookTitleCompact } from '@/functions/book-title'
 
 const cookieFit = 'webreader.fit'
-const cookieRtl = 'webreader.rtl'
+const cookieRtl = 'webreader.flipDirection'
 const cookieDoublePages = 'webreader.doublePages'
 
 export default Vue.extend({
@@ -273,7 +273,7 @@ export default Vue.extend({
         doublePages: false,
         imageFits: Object.values(ImageFit),
         fit: ImageFit.HEIGHT,
-        rtl: false
+        flipDirection: false
       }
     }
   },
@@ -288,7 +288,7 @@ export default Vue.extend({
     window.addEventListener('keydown', this.keyPressed)
     this.setup(this.bookId, Number(this.$route.query.page))
 
-    this.loadFromCookie(cookieRtl, (v) => { this.rtl = (v === 'true') })
+    this.loadFromCookie(cookieRtl, (v) => { this.flipDirection = (v === 'true') })
     this.loadFromCookie(cookieDoublePages, (v) => { this.doublePages = (v === 'true') })
     this.loadFromCookie(cookieFit, (v) => { if (v) { this.imageFit = v } })
   },
@@ -358,13 +358,13 @@ export default Vue.extend({
     bookTitle (): string {
       return getBookTitleCompact(this.book.name, this.series.name)
     },
-    rtl: {
+    flipDirection: {
       get: function (): boolean {
-        return this.pageLayout.rtl
+        return this.pageLayout.flipDirection
       },
-      set: function (rtl: boolean): void {
-        this.pageLayout.rtl = rtl
-        this.$cookies.set(cookieRtl, rtl, Infinity)
+      set: function (flipDirection: boolean): void {
+        this.pageLayout.flipDirection = flipDirection
+        this.$cookies.set(cookieRtl, flipDirection, Infinity)
       }
     },
     imageFit: {
@@ -396,11 +396,11 @@ export default Vue.extend({
       switch (e.key) {
         case 'PageUp':
         case 'ArrowRight':
-          this.pageLayout.rtl ? this.prev() : this.next()
+          this.pageLayout.flipDirection ? this.prev() : this.next()
           break
         case 'PageDown':
         case 'ArrowLeft':
-          this.pageLayout.rtl ? this.next() : this.prev()
+          this.pageLayout.flipDirection ? this.next() : this.prev()
           break
         case 'Home':
           this.goToFirst()
