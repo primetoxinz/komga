@@ -1,3 +1,32 @@
+## [0.16.3](https://github.com/gotson/komga/compare/v0.16.2...v0.16.3) (2020-02-28)
+
+
+### Bug Fixes
+
+* **webui:** remove border on preselect for multi-select ([a0bd2f9](https://github.com/gotson/komga/commit/a0bd2f9682530649ab2c91b447ba03833687c0c2))
+
+## [0.16.2](https://github.com/gotson/komga/compare/v0.16.1...v0.16.2) (2020-02-28)
+
+
+### Bug Fixes
+
+* **webui:** better multi-select ([881806e](https://github.com/gotson/komga/commit/881806ed1c78b0a66ee46905acb9fef14a210bc2))
+
+## [0.16.1](https://github.com/gotson/komga/compare/v0.16.0...v0.16.1) (2020-02-27)
+
+
+### Bug Fixes
+
+* **webui:** close edit series dialog on escape keypress ([7c0f55d](https://github.com/gotson/komga/commit/7c0f55deeb30ac406ffd4cd15395363cbb372951))
+* **webui:** remove ripple effect on series card ([ce5594e](https://github.com/gotson/komga/commit/ce5594e82e265cc99421fb5a7489a642d34b1204))
+
+# [0.16.0](https://github.com/gotson/komga/compare/v0.15.1...v0.16.0) (2020-02-27)
+
+
+### Features
+
+* **webui:** series multi-selection and edition ([cfce076](https://github.com/gotson/komga/commit/cfce0768ba688b396ba3f0aadbc91008ff0b3555))
+
 ## [0.15.1](https://github.com/gotson/komga/compare/v0.15.0...v0.15.1) (2020-02-25)
 
 

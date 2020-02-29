@@ -3,13 +3,14 @@
     <v-dialog v-model="modal"
               :fullscreen="$vuetify.breakpoint.xsOnly"
               max-width="800"
+              @keydown.esc="dialogCancel"
     >
       <v-card>
         <v-toolbar class="hidden-sm-and-up">
           <v-btn icon @click="dialogCancel">
             <v-icon>mdi-close</v-icon>
           </v-btn>
-          <v-toolbar-title>Edit {{ $_.get(series, 'metadata.title') }}</v-toolbar-title>
+          <v-toolbar-title>{{ dialogTitle }}</v-toolbar-title>
           <v-spacer/>
           <v-toolbar-items>
             <v-btn text color="primary" @click="dialogConfirm">Save changes</v-btn>
@@ -18,7 +19,7 @@
 
         <v-card-title class="hidden-xs-only">
           <v-icon class="mr-4">mdi-pencil</v-icon>
-          Edit {{ $_.get(series, 'metadata.title') }}
+          {{ dialogTitle }}
         </v-card-title>
 
         <v-tabs :vertical="$vuetify.breakpoint.smAndUp">
@@ -34,7 +35,7 @@
                 <v-container fluid>
 
                   <!--  Title  -->
-                  <v-row>
+                  <v-row v-if="!multiple">
                     <v-col cols="12">
                       <v-text-field v-model="form.title"
                                     label="Title"
@@ -52,7 +53,7 @@
                   </v-row>
 
                   <!--  Sort Title  -->
-                  <v-row>
+                  <v-row v-if="!multiple">
                     <v-col cols="12">
                       <v-text-field v-model="form.titleSort"
                                     label="Sort Title"
@@ -130,7 +131,6 @@ export default Vue.extend({
       modal: false,
       snackbar: false,
       snackText: '',
-      seriesStatus: Object.keys(SeriesStatus).map(x => capitalize(x)),
       form: {
         status: '',
         statusLock: false,
@@ -144,7 +144,7 @@ export default Vue.extend({
   props: {
     value: Boolean,
     series: {
-      type: Object,
+      type: [Object as () => SeriesDto, Array as () => SeriesDto[]],
       required: true
     }
   },
@@ -160,18 +160,35 @@ export default Vue.extend({
     }
   },
   computed: {
-    libraries (): LibraryDto[] {
-      return this.$store.state.komgaLibraries.libraries
+    multiple (): boolean {
+      return Array.isArray(this.series)
+    },
+    seriesStatus (): string[] {
+      return Object.keys(SeriesStatus).map(x => capitalize(x))
+    },
+    dialogTitle (): string {
+      return this.multiple
+        ? `Edit ${(this.series as SeriesDto[]).length} series`
+        : `Edit ${this.$_.get(this.series, 'metadata.title')}`
     }
   },
   methods: {
-    dialogReset (series: SeriesDto) {
-      this.form.status = capitalize(series.metadata.status)
-      this.form.statusLock = series.metadata.statusLock
-      this.form.title = series.metadata.title
-      this.form.titleLock = series.metadata.titleLock
-      this.form.titleSort = series.metadata.titleSort
-      this.form.titleSortLock = series.metadata.titleSortLock
+    dialogReset (series: SeriesDto | SeriesDto[]) {
+      if (Array.isArray(series) && series.length === 0) return
+      if (Array.isArray(series) && series.length > 0) {
+        const status = this.$_.uniq(series.map(x => x.metadata.status))
+        this.form.status = status.length > 1 ? '' : capitalize(status[0])
+        const statusLock = this.$_.uniq(series.map(x => x.metadata.statusLock))
+        this.form.statusLock = statusLock.length > 1 ? false : statusLock[0]
+      } else {
+        const s = series as SeriesDto
+        this.form.status = capitalize(s.metadata.status)
+        this.form.statusLock = s.metadata.statusLock
+        this.form.title = s.metadata.title
+        this.form.titleLock = s.metadata.titleLock
+        this.form.titleSort = s.metadata.titleSort
+        this.form.titleSortLock = s.metadata.titleSortLock
+      }
     },
     dialogCancel () {
       this.$emit('input', false)
@@ -186,21 +203,35 @@ export default Vue.extend({
       this.snackbar = true
     },
     async editSeries () {
-      try {
-        const metadata = {
-          status: this.form.status.toUpperCase(),
-          statusLock: this.form.statusLock,
-          title: this.form.title,
-          titleLock: this.form.titleLock,
-          titleSort: this.form.titleSort,
-          titleSortLock: this.form.titleSortLock
-        } as SeriesMetadataUpdateDto
+      const updated = [] as SeriesDto[]
+      const toUpdate = (this.multiple ? this.series : [this.series]) as SeriesDto[]
+      for (const s of toUpdate) {
+        try {
+          if (this.form.status === '') {
+            return
+          }
+          const metadata = {
+            status: this.form.status.toUpperCase(),
+            statusLock: this.form.statusLock
+          } as SeriesMetadataUpdateDto
 
-        const updatedSeries = await this.$komgaSeries.updateMetadata(this.series.id, metadata)
-        this.$emit('update:series', updatedSeries)
-      } catch (e) {
-        this.showSnack(e.message)
+          if (!this.multiple) {
+            this.$_.merge(metadata, {
+              title: this.form.title,
+              titleLock: this.form.titleLock,
+              titleSort: this.form.titleSort,
+              titleSortLock: this.form.titleSortLock
+            })
+          }
+
+          const updatedSeries = await this.$komgaSeries.updateMetadata(s.id, metadata)
+          updated.push(updatedSeries)
+        } catch (e) {
+          this.showSnack(e.message)
+          updated.push(s)
+        }
       }
+      this.$emit('update:series', this.multiple ? updated : updated[0])
     }
   }
 })
