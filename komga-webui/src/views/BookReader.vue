@@ -1,5 +1,5 @@
 <template>
-  <v-container class="ma-0 pa-0" fluid v-if="pages.length > 0" style="background: black; width: 100%; height: 100%"
+  <v-container class="ma-0 pa-0 full-height" fluid v-if="pages.length > 0" style="width: 100%;"
        v-touch="{
        left: () => next(),
       right: () => prev(),
@@ -94,14 +94,13 @@
       :class="`settings ${toolbar ? '' : 'd-none'}`"
       absolute
       horizontal
-      class="pa-2"
     >
       <v-layout class="flex-column justify-center">
         <v-flex class="text-center font-weight-light">
           {{ currentPage }}/{{ pagesCount }}
         </v-flex>
          <!--  Menu: page slider  -->
-        <v-flex>
+        <v-flex class="">
           <v-slider
             v-model="goToPage"
             class="align-center"
@@ -146,7 +145,7 @@
          style="z-index: 1;"
     />
 
-    <div style="height: 100%">
+    <div class="full-height">
     <!--  Carousel  -->
     <v-carousel v-model="carouselPage"
                 :show-arrows="false"
@@ -161,7 +160,6 @@
                        :key="doublePages ? `db${p}` : `sp${p}`"
                        :eager="eagerLoad(p)"
                        class="full-height"
-                       style="height: 100%"
       >
         <div class="full-height d-flex flex-column justify-center reader-background">
           <div :class="`d-flex flex-row${rtl ? '-reverse' : ''} justify-center px-0 mx-0` " >
@@ -692,7 +690,6 @@ export default Vue.extend({
 }
 
 .full-height {
-
   height: 100%;
 }
 
