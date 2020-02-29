@@ -3,13 +3,9 @@
        v-touch="{
        left: () => next(),
       right: () => prev(),
-      up: () => swipe('Up'),
-      down: () => swipe('Down')
       }"
-
   >
     <div>
-
     <v-toolbar
       dense elevation="1"
       :class="`settings ${toolbar ? '' : 'd-none'}`"
@@ -48,15 +44,7 @@
             <!--  Menu: double pages buttons  -->
             <v-row justify="center">
               <v-col cols="auto">
-                <v-btn-toggle v-model="doublePagesButtons" dense mandatory active-class="primary" class="flex-column">
-                  <v-btn @click="setDoublePages(false)">
-                    Single page
-                  </v-btn>
-
-                  <v-btn @click="setDoublePages(true)">
-                    Double pages
-                  </v-btn>
-                </v-btn-toggle>
+                <v-switch v-model="doublePages" :label="`${doublePages ? 'Double Pages' : 'Single Pages'}`"/>
               </v-col>
             </v-row>
           </v-list-item>
@@ -108,7 +96,10 @@
       horizontal
       class="pa-2"
     >
-      <v-layout class="flex-column">
+      <v-layout class="flex-column justify-center">
+        <v-flex class="text-center font-weight-light">
+          {{ currentPage }}/{{ pagesCount }}
+        </v-flex>
          <!--  Menu: page slider  -->
         <v-flex>
           <v-slider
@@ -139,19 +130,19 @@
 
     <!--  clickable zone: left  -->
     <div @click="rtl ? next() : prev()"
-         class="left-quarter full-height"
+         class="left-quarter full-height top"
          style="z-index: 1;"
     />
 
     <!--  clickable zone: menu  -->
     <div @click="toolbar = !toolbar"
-         class="center-half full-height"
+         class="center-half full-height top"
          style="z-index: 1;"
     />
 
     <!--  clickable zone: right  -->
     <div @click="rtl ? prev() : next()"
-         class="right-quarter full-height"
+         class="right-quarter full-height top"
          style="z-index: 1;"
     />
 
@@ -162,25 +153,28 @@
                 hide-delimiters
                 :continuous="false"
                 touchless
-                height="auto"
                 :reverse="rtl"
-
+                height="100%"
     >
       <!--  Carousel: pages  -->
       <v-carousel-item v-for="p in slidesRange"
                        :key="doublePages ? `db${p}` : `sp${p}`"
                        :eager="eagerLoad(p)"
+                       class="full-height"
+                       style="height: 100%"
       >
-        <div :class="`d-flex flex-row${rtl ? '-reverse' : ''} justify-center px-1`">
-          <img :src="getPageUrl(p)"
-               :height="maxHeight"
-               :width="maxWidth(p)"
-          />
-          <img v-if="doublePages && p !== 1 && p !== pagesCount && p+1 !== pagesCount"
-               :src="getPageUrl(p+1)"
-               :height="maxHeight"
-               :width="maxWidth(p+1)"
-          />
+        <div class="full-height d-flex flex-column justify-center reader-background">
+          <div :class="`d-flex flex-row${rtl ? '-reverse' : ''} justify-center px-0 mx-0` " >
+            <img :src="getPageUrl(p)"
+                 :height="maxHeight"
+                 :width="maxWidth(p)"
+            />
+            <img v-if="doublePages && p !== 1 && p !== pagesCount && p+1 !== pagesCount"
+                 :src="getPageUrl(p+1)"
+                 :height="maxHeight"
+                 :width="maxWidth(p+1)"
+            />
+          </div>
         </div>
       </v-carousel-item>
     </v-carousel>
@@ -408,11 +402,12 @@ export default Vue.extend({
       fit: ImageFit.HEIGHT,
       rtlButtons: 0,
       rtl: false,
-      doublePages: false,
-      doublePagesButtons: 0,
       showThumbnailsExplorer: false,
       toolbar: true,
-      menu: false
+      menu: false,
+      pageLayout: {
+        doublePages: false
+      }
     }
   },
   created () {
@@ -437,7 +432,7 @@ export default Vue.extend({
     }
     if (this.$cookies.isKey(cookieDoublePages)) {
       if (this.$cookies.get(cookieDoublePages) === 'true') {
-        this.setDoublePages(true)
+        this.doublePages = true
       }
     }
   },
@@ -506,6 +501,17 @@ export default Vue.extend({
     },
     bookTitle (): string {
       return getBookTitleCompact(this.book.name, this.series.name)
+    },
+    doublePages: {
+      get: function (): boolean {
+        return this.pageLayout.doublePages
+      },
+      set: function (doublePages: boolean): void {
+        const current = this.currentPage
+        this.pageLayout.doublePages = doublePages
+        this.goTo(current)
+        this.$cookies.set(cookieDoublePages, doublePages, Infinity)
+      }
     }
   },
   methods: {
@@ -642,13 +648,6 @@ export default Vue.extend({
       }
       this.$cookies.set(cookieFit, fit, Infinity)
     },
-    setDoublePages (doublePages: boolean) {
-      const current = this.currentPage
-      this.doublePages = doublePages
-      this.goTo(current)
-      this.doublePagesButtons = doublePages ? 1 : 0
-      this.$cookies.set(cookieDoublePages, doublePages, Infinity)
-    },
     toSinglePages (i: number): number {
       if (i === 1) return 1
       if (i === this.slidesCount) return this.pagesCount
@@ -679,13 +678,21 @@ export default Vue.extend({
 
 <style scoped>
 
+.reader-background {
+     background-color: white; /* TODO add a setting for this, some books might not be white */
+}
+
 .settings {
   /*position: absolute;*/
   z-index: 2;
 }
 
-.full-height {
+.top {
   top: 0;
+}
+
+.full-height {
+
   height: 100%;
 }
 
